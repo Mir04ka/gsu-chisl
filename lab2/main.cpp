@@ -1,6 +1,8 @@
 #define K (0.01 * (14 + 21))
+#define EPSILON 0.000001
 #include <iostream>
 #include <string>
+#include <cmath>
 
 int a, b;
 double matrix[3][4] = {{2 + K, 0.25, 0.75, 3 + K}, {0.25, 1.5 + K, 0.45, 2.2 + K}, {0.75, 0.45, 3 + K, 4.2 + K}};
@@ -75,10 +77,9 @@ void solve_gauss() {
     print_matrix();
 
     // Вычисляем неизвестные
-    double x1, x2, x3;
-    x3 = matrix[2][3];
-    x2 = matrix[1][3] - matrix[1][2] * x3;
-    x1 = matrix[0][3] - matrix[0][2] * x3 - matrix[0][1] * x2;
+    double x3 = matrix[2][3];
+    double x2 = matrix[1][3] - matrix[1][2] * x3;
+    double x1 = matrix[0][3] - matrix[0][2] * x3 - matrix[0][1] * x2;
 
     std::cout << "\n";
     printf("x1 = %.6lf \n", x1);
@@ -86,10 +87,10 @@ void solve_gauss() {
     printf("x3 = %.6lf \n", x3);
 
     // Проверка
-    for (int i = 0; i < 3; i++) {
-        double res = init_matrix[i][0] * x1 + init_matrix[i][1] * x2 + init_matrix[i][2] * x3;
+    for (auto & i : init_matrix) {
+        double res = i[0] * x1 + i[1] * x2 + i[2] * x3;
         std::cout << "\n";
-        printf("Expected: %.6lf Result: %.6lf", init_matrix[i][3], res);
+        printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
     }
 }
 
