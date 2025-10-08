@@ -23,6 +23,8 @@ void print_matrix(const std::string& label = "") {
 }
 
 void solve_gauss() {
+    double det = matrix[0][0];
+
     // Проверка, что элемент 1 1 не равен нулю
     if (matrix[0][0] == 0) {
         std::cout << "a11 is zero!";
@@ -44,6 +46,8 @@ void solve_gauss() {
     }
     print_matrix();
 
+    det *= matrix[1][1];
+
     // Проверка, что элемент 2 2 не равен нулю
     if (matrix[1][1] == 0) {
         std::cout << "a22 is zero!";
@@ -63,6 +67,8 @@ void solve_gauss() {
         matrix[2][j] = matrix[2][j] + matrix[1][j] * kf;
     }
     print_matrix();
+
+    det *= matrix[2][2];
 
     // Проверка, что элемент 3 3 не равен нулю
     if (matrix[2][2] == 0) {
@@ -93,9 +99,13 @@ void solve_gauss() {
         std::cout << "\n";
         printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
     }
+
+    // Определитель
+    std::cout << "\ndet = " << det << "\n";
 }
 
 void solve_sqrt() {
+    double detB, det;
     double temp_matrix[3][4] = {0};
     memset(matrix, 0, sizeof(matrix));
 
@@ -113,6 +123,8 @@ void solve_sqrt() {
     matrix[2][2] = sqrt(init_matrix[2][2] - matrix[0][2] * matrix[0][2] - matrix[1][2] * matrix[1][2]);
 
     print_matrix();
+
+    detB = matrix[0][0] * matrix[1][1] * matrix[2][2];
 
     temp_matrix[0][0] = matrix[0][0];
     temp_matrix[1][1] = matrix[1][1];
@@ -165,6 +177,10 @@ void solve_sqrt() {
         std::cout << "\n";
         printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
     }
+
+    // Определитель
+    det = detB * detB;
+    std::cout << "\ndet = " << det << "\n";
 }
 
 void solve_holecki() {
@@ -250,13 +266,33 @@ void solve_holecki() {
     }
 
     double y1 = matrix[0][3] / B[0][0];
-    double y2 = (matrix[1][3] - y1 * matrix[1][0]) / B[1][1];
-    double y3 = (matrix[2][3] - y1 * matrix[2][0] - y2 * matrix[2][1]) / B[2][2];
+    double y2 = (matrix[1][3] - B[1][0] * y1) / B[1][1];
+    double y3 = (matrix[2][3] - B[2][0] * y1 - B[2][1] * y2) / B[2][2];
 
     std::cout << "\n";
     printf("y1 = %.6lf \n", y1);
     printf("y2 = %.6lf \n", y2);
     printf("y3 = %.6lf \n", y3);
+
+    double x3 = y3;
+    double x2 = y2 - C[1][2] * x3;
+    double x1 = y1 - C[0][1] * x2 - C[0][2] * x3;
+
+    std::cout << "\n";
+    printf("x1 = %.6lf \n", x1);
+    printf("x2 = %.6lf \n", x2);
+    printf("x3 = %.6lf \n", x3);
+
+    // Проверка
+    for (auto & i : init_matrix) {
+        double res = i[0] * x1 + i[1] * x2 + i[2] * x3;
+        std::cout << "\n";
+        printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
+    }
+
+    // Определитель
+    double det = B[0][0] * B[1][1] * B[2][2];
+    std::cout << "\ndet = " << det << "\n";
 }
 
 int main() {
@@ -265,7 +301,7 @@ int main() {
 
     // solve_gauss();
     // solve_sqrt();
-    solve_holecki();
+    // solve_holecki();
 
     return 0;
 }
