@@ -1,13 +1,17 @@
-#define K (0.01 * (14 + 21))
+// #define K (0.01 * (14 + 21))
+#define K 0
 #define EPSILON 0.000001
+#define EPS 0.001
 #include <iostream>
 #include <string>
 #include <cmath>
 #include <cstring>
 
-double matrix[3][4] = {{2.04, 0.25, 0.75, 35.12}, {0.25, 1.54, 0.45, 22.04}, {0.75, 0.45, 3.04, 37.08}};
-// double matrix[3][4] = {{2 + K, 0.25, 0.75, 3 + K}, {0.25, 1.5 + K, 0.45, 2.2 + K}, {0.75, 0.45, 3 + K, 4.2 + K}};
+// double matrix[3][4] = {{2.04, 0.25, 0.75, 35.12}, {0.25, 1.54, 0.45, 22.04}, {0.75, 0.45, 3.04, 37.08}};
+double matrix[3][4] = {{2 + K, 0.25, 0.75, 3 + K}, {0.25, 1.5 + K, 0.45, 2.2 + K}, {0.75, 0.45, 3 + K, 4.2 + K}};
 double init_matrix[3][4];
+
+double progon_matrix[3][4] = {{2 + K, 0.25, 0, 3 + K}, {0.25, 1.5 + K, 0.45, 2.2 + K}, {0, 0.45, 3 + K, 4.2 + K}};
 
 void print_matrix(const std::string& label = "") {
     std::cout << "\n";
@@ -295,6 +299,62 @@ void solve_holecki() {
     std::cout << "\ndet = " << det << "\n";
 }
 
+void solve_progonka() {
+    std::copy(&progon_matrix[0][0], &progon_matrix[0][0]+3*4,&matrix[0][0]);
+    print_matrix();
+
+    double y1 = matrix[0][0];
+    double alfa1 = (-matrix[0][1]) / y1;
+    double beta1 = matrix[0][3] / y1;
+
+    double y2 = matrix[1][1] + alfa1 * matrix[1][0];
+    double alfa2 = (-matrix[1][2]) / y2;
+    double beta2 = (matrix[1][3] - matrix[1][0] * beta1) / y2;
+
+    double y3 = matrix[2][2] + alfa2 * matrix[2][1];
+    double beta3 = (matrix[2][3] - matrix[2][1] * beta2) / y3;
+
+    double x3 = beta3;
+    double x2 = alfa2 * x3 + beta2;
+    double x1 = alfa1 * x2 + beta1;
+
+    std::cout << "\n";
+    printf("x1 = %.6lf \n", x1);
+    printf("x2 = %.6lf \n", x2);
+    printf("x3 = %.6lf \n", x3);
+
+    // Проверка
+    for (auto & i : matrix) {
+        double res = i[0] * x1 + i[1] * x2 + i[2] * x3;
+        std::cout << "\n";
+        printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
+    }
+}
+
+void solve_iter() {
+    // Проверка сходимости
+    if ((matrix[0][0] <= matrix[0][1] + matrix[0][2]) || (matrix[1][1] <= matrix[1][0] + matrix[1][2]) || (matrix[2][2] <= matrix[2][1] + matrix[2][0])) {
+        std::cout << "\nNo conditions!\n";
+        return;
+    }
+
+    matrix[0][3] -= matrix[0][1] + matrix[0][2];
+    matrix[1][3] -= matrix[1][0] + matrix[1][2];
+    matrix[2][3] -= matrix[2][1] + matrix[2][0];
+    matrix[0][1] = matrix[0][2] = 0;
+    matrix[1][0] = matrix[1][2] = 0;
+    matrix[2][1] = matrix[2][0] = 0;
+    print_matrix();
+
+    matrix[0][3] /= matrix[0][0];
+    matrix[0][0] /= matrix[0][0];
+    matrix[1][3] /= matrix[1][1];
+    matrix[1][1] /= matrix[1][1];
+    matrix[2][3] /= matrix[2][2];
+    matrix[2][2] /= matrix[2][2];
+    print_matrix();
+}
+
 int main() {
     std::copy(&matrix[0][0], &matrix[0][0]+3*4,&init_matrix[0][0]);
     print_matrix("Initial matrix");
@@ -302,6 +362,10 @@ int main() {
     // solve_gauss();
     // solve_sqrt();
     // solve_holecki();
+
+    // solve_progonka();
+
+    solve_iter();
 
     return 0;
 }
