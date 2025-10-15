@@ -5,7 +5,6 @@
 #include <cmath>
 #include <iostream>
 #include <string>
-#include <cmath>
 #include <cstring>
 
 // double matrix[3][4] = {{2.04, 0.25, 0.75, 35.12}, {0.25, 1.54, 0.45, 22.04}, {0.75, 0.45, 3.04, 37.08}};
@@ -28,6 +27,8 @@ void print_matrix(const std::string& label = "") {
 }
 
 void solve_gauss() {
+    std::cout << "\nМетод Гаусса\n";
+
     double det = matrix[0][0];
 
     // Проверка, что элемент 1 1 не равен нулю
@@ -40,7 +41,7 @@ void solve_gauss() {
     for (int i = 3; i >= 0; i--) {
         matrix[0][i] = matrix[0][i] / matrix[0][0];
     }
-    print_matrix();
+    print_matrix("Делим все элементы первой строки на первый элемент");
 
     // Прибавляем к строкам 2 и 3 первой строки, умноженной на первый элемент строки с минусом
     for (int i = 1; i < 3; i++) {
@@ -49,7 +50,7 @@ void solve_gauss() {
             matrix[i][j] = matrix[i][j] + matrix[0][j] * kf;
         }
     }
-    print_matrix();
+    print_matrix("Прибавляем к строкам 2 и 3 элементы первой строки, умноженные на первый элемент строки с минусом");
 
     det *= matrix[1][1];
 
@@ -64,14 +65,14 @@ void solve_gauss() {
     for (int i = 3; i >= 0; i--) {
         matrix[1][i] = matrix[1][i] / temp;
     }
-    print_matrix();
+    print_matrix("Делим все элементы второй строки на элемент 2 2");
 
     // Прибавляем к 3 строке вторую, умноженную на второй элемент строки с минусом
     double kf = -matrix[2][1];
     for (int j = 0; j < 4; j++) {
         matrix[2][j] = matrix[2][j] + matrix[1][j] * kf;
     }
-    print_matrix();
+    print_matrix("Прибавляем к 3 строке элементы второй, умноженные на элемент 2 2 с минусом");
 
     det *= matrix[2][2];
 
@@ -81,19 +82,19 @@ void solve_gauss() {
         return;
     }
 
-    // Делим все элементы второй строки на элемент 2 2
+    // Делим все элементы второй строки на элемент 3 3
     temp = matrix[2][2];
     for (int i = 3; i >= 0; i--) {
         matrix[2][i] = matrix[2][i] / temp;
     }
-    print_matrix();
+    print_matrix("Делим все элементы второй строки на элемент 3 3");
 
     // Вычисляем неизвестные
     double x3 = matrix[2][3];
     double x2 = matrix[1][3] - matrix[1][2] * x3;
     double x1 = matrix[0][3] - matrix[0][2] * x3 - matrix[0][1] * x2;
 
-    std::cout << "\n";
+    std::cout << "\nОтвет:\n";
     printf("x1 = %.6lf \n", x1);
     printf("x2 = %.6lf \n", x2);
     printf("x3 = %.6lf \n", x3);
@@ -102,14 +103,16 @@ void solve_gauss() {
     for (auto & i : init_matrix) {
         double res = i[0] * x1 + i[1] * x2 + i[2] * x3;
         std::cout << "\n";
-        printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
+        printf("Ожидаемое: %.6lf Результат: %.6lf Правильно: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "ДА" : "НЕТ");
     }
 
     // Определитель
-    std::cout << "\ndet = " << det << "\n";
+    std::cout << "\nОпределитель: " << det << "\n";
 }
 
 void solve_sqrt() {
+    std::cout << "\nМетод квадратного корня\n";
+
     double detB, det;
     double temp_matrix[3][4] = {0};
     memset(matrix, 0, sizeof(matrix));
@@ -127,7 +130,7 @@ void solve_sqrt() {
 
     matrix[2][2] = sqrt(init_matrix[2][2] - matrix[0][2] * matrix[0][2] - matrix[1][2] * matrix[1][2]);
 
-    print_matrix();
+    print_matrix("Вычисляем треугольную матрицу B из начальной матрицы");
 
     detB = matrix[0][0] * matrix[1][1] * matrix[2][2];
 
@@ -138,7 +141,7 @@ void solve_sqrt() {
     temp_matrix[2][0] = matrix[0][2];
     temp_matrix[2][1] = matrix[1][2];
 
-    std::cout << "\n";
+    std::cout << "\nВычисляем обратную треугольную матрицу C из начальной\n";
     for (auto & i : temp_matrix) {
         for (double j : i) {
             printf("%6.3lf ", j);
@@ -150,7 +153,7 @@ void solve_sqrt() {
     double y2 = (matrix[1][3] - matrix[0][1] * y1) / matrix[1][1];
     double y3 = (matrix[2][3] - matrix[0][2] * y1 - matrix[1][2] * y2) / matrix[2][2];
 
-    std::cout << "\n";
+    std::cout << "\nВычисляем коэф-ты y из матрицы B\n";
     printf("y1 = %.6lf \n", y1);
     printf("y2 = %.6lf \n", y2);
     printf("y3 = %.6lf \n", y3);
@@ -159,7 +162,7 @@ void solve_sqrt() {
     temp_matrix[1][3] = y2;
     temp_matrix[2][3] = y3;
 
-    std::cout << "\n";
+    std::cout << "\nЗадаем свободные члены матрицы C равными коэф-там y\n";
     for (auto & i : temp_matrix) {
         for (double j : i) {
             printf("%6.3lf ", j);
@@ -171,7 +174,7 @@ void solve_sqrt() {
     double x2 = (temp_matrix[1][3] - x3 * temp_matrix[2][1]) / temp_matrix[1][1];
     double x1 = (temp_matrix[0][3] - x3 * temp_matrix[2][0] - x2 * temp_matrix[1][0]) / temp_matrix[0][0];
 
-    std::cout << "\n";
+    std::cout << "\nВычисляем из полученной матрицы C неизвестные\n";
     printf("x1 = %.6lf \n", x1);
     printf("x2 = %.6lf \n", x2);
     printf("x3 = %.6lf \n", x3);
@@ -180,15 +183,17 @@ void solve_sqrt() {
     for (auto & i : init_matrix) {
         double res = i[0] * x1 + i[1] * x2 + i[2] * x3;
         std::cout << "\n";
-        printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
+        printf("Ожидаемое: %.6lf Результат: %.6lf Правильно: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "ДА" : "НЕТ");
     }
 
     // Определитель
     det = detB * detB;
-    std::cout << "\ndet = " << det << "\n";
+    std::cout << "\nОпределитель: " << det << "\n";
 }
 
 void solve_holecki() {
+    std::cout << "\nМетод Холецкого\n";
+
     // Проверки главных миноров
     if (matrix[0][0] == 0) {
         std::cout << "Minor1 == 0";
@@ -207,6 +212,8 @@ void solve_holecki() {
         std::cout << "Major3 == 0";
         return;
     }
+
+    std::cout << "\nГлавные миноры не равны 0. Можно продолжать\n"
 
     double B[3][3], C[3][3];
     C[0][0] = 1.0;
@@ -463,15 +470,18 @@ void solve_zeidel() {
 }
 
 int main() {
+    setlocale(LC_ALL, "Russian");
+
     std::copy(&matrix[0][0], &matrix[0][0]+3*4,&init_matrix[0][0]);
-    print_matrix("Initial matrix");
+    print_matrix("Начальная матрица");
 
     // solve_gauss();
     // solve_sqrt();
-    // solve_holecki();
+    solve_holecki();
 
     // solve_progonka();
-    solve_iter();
+
+    // solve_iter();
     // solve_zeidel();
 
     return 0;
