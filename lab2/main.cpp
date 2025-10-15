@@ -1,7 +1,8 @@
-// #define K (0.01 * (14 + 21))
-#define K 0
+#define K (0.01 * (14 + 21))
+// #define K 0
 #define EPSILON 0.000001
 #define EPS 0.001
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -338,21 +339,127 @@ void solve_iter() {
         return;
     }
 
-    matrix[0][3] -= matrix[0][1] + matrix[0][2];
-    matrix[1][3] -= matrix[1][0] + matrix[1][2];
-    matrix[2][3] -= matrix[2][1] + matrix[2][0];
-    matrix[0][1] = matrix[0][2] = 0;
-    matrix[1][0] = matrix[1][2] = 0;
-    matrix[2][1] = matrix[2][0] = 0;
-    print_matrix();
+    // Вычисляем коэфы
+    double mults[3][2];
+    mults[0][0] = matrix[0][1] / matrix[0][0] * -1;
+    mults[0][1] = matrix[0][2] / matrix[0][0] * -1;
+    mults[1][0] = matrix[1][0] / matrix[1][1] * -1;
+    mults[1][1] = matrix[1][2] / matrix[1][1] * -1;
+    mults[2][0] = matrix[2][0] / matrix[2][2] * -1;
+    mults[2][1] = matrix[2][1] / matrix[2][2] * -1;
 
-    matrix[0][3] /= matrix[0][0];
-    matrix[0][0] /= matrix[0][0];
-    matrix[1][3] /= matrix[1][1];
-    matrix[1][1] /= matrix[1][1];
-    matrix[2][3] /= matrix[2][2];
-    matrix[2][2] /= matrix[2][2];
-    print_matrix();
+    // Выводим коэфы
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 2; j++) {
+            printf("%6.3lf ", mults[i][j]);
+        }
+        std::cout << "\n";
+    }
+
+    // Вычисляем и выводим начальное приближение
+    double x_old[3], x_new[3];
+    double c[3];
+    for (int i = 0; i < 3; i++) {
+        x_old[i] = matrix[i][3] / matrix[i][i];
+        c[i] = x_old[i];
+        std::cout << i + 1 << ". " << x_old[i] << "\n";
+    }
+
+    // Делаем итерации(если их более 100 - выход)
+    for (int i = 0; i < 100; i++) {
+        x_new[0] = mults[0][0] * x_old[1] + mults[0][1] * x_old[2] + c[0];
+        x_new[1] = mults[1][0] * x_old[0] + mults[1][1] * x_old[2] + c[1];
+        x_new[2] = mults[2][0] * x_old[0] + mults[2][1] * x_old[1] + c[2];
+
+        printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_new[0], x_new[1], x_new[2]);
+        // printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_old[0], x_old[1], x_old[2]);
+        double prec = std::sqrt(pow((x_new[0] - x_old[0]), 2) + pow((x_new[1] - x_old[1]), 2) + pow((x_new[2] - x_old[2]), 2));
+        std::cout << "Prec: " << prec << "\n";
+        if (prec <= EPS) {
+            std::cout << "Finished!\n";
+
+            // Проверка
+            for (int j = 0; j < 3; j++) {
+                double tmp = matrix[j][0] * x_new[0] + matrix[j][1] * x_new[1] + matrix[j][2] * x_new[2];
+                printf("\n%9.6lf %s", tmp, fabs(tmp - matrix[j][3]) < EPS ? "OK" : "WRONG");
+            }
+
+            std::cout << "\n\n" << i + 1 << " iterations\n";
+
+            return;
+        }
+
+        x_old[0] = x_new[0];
+        x_old[1] = x_new[1];
+        x_old[2] = x_new[2];
+    }
+
+    std::cout << "\nOut of iterations!\n";
+}
+
+void solve_zeidel() {
+    // Проверка сходимости
+    if ((matrix[0][0] <= matrix[0][1] + matrix[0][2]) || (matrix[1][1] <= matrix[1][0] + matrix[1][2]) || (matrix[2][2] <= matrix[2][1] + matrix[2][0])) {
+        std::cout << "\nNo conditions!\n";
+        return;
+    }
+
+    // Вычисляем коэфы
+    double mults[3][2];
+    mults[0][0] = matrix[0][1] / matrix[0][0] * -1;
+    mults[0][1] = matrix[0][2] / matrix[0][0] * -1;
+    mults[1][0] = matrix[1][0] / matrix[1][1] * -1;
+    mults[1][1] = matrix[1][2] / matrix[1][1] * -1;
+    mults[2][0] = matrix[2][0] / matrix[2][2] * -1;
+    mults[2][1] = matrix[2][1] / matrix[2][2] * -1;
+
+    // Выводим коэфы
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 2; j++) {
+            printf("%6.3lf ", mults[i][j]);
+        }
+        std::cout << "\n";
+    }
+
+    // Вычисляем и выводим начальное приближение
+    double x_old[3], x_new[3];
+    double c[3];
+    for (int i = 0; i < 3; i++) {
+        x_old[i] = matrix[i][3] / matrix[i][i];
+        c[i] = x_old[i];
+        std::cout << i + 1 << ". " << x_old[i] << "\n";
+    }
+
+    // Делаем итерации(если их более 100 - выход)
+    for (int i = 0; i < 100; i++) {
+        x_new[0] = mults[0][0] * x_old[1] + mults[0][1] * x_old[2] + c[0];
+        x_new[1] = mults[1][0] * x_new[0] + mults[1][1] * x_old[2] + c[1];
+        x_new[2] = mults[2][0] * x_new[0] + mults[2][1] * x_new[1] + c[2];
+
+        printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_new[0], x_new[1], x_new[2]);
+        // printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_old[0], x_old[1], x_old[2]);
+        double prec = std::sqrt(pow((x_new[0] - x_old[0]), 2) + pow((x_new[1] - x_old[1]), 2) + pow((x_new[2] - x_old[2]), 2));
+        std::cout << "Prec: " << prec << "\n";
+        if (prec <= EPS) {
+            std::cout << "Finished!\n";
+
+            // Проверка
+            for (int j = 0; j < 3; j++) {
+                double tmp = matrix[j][0] * x_new[0] + matrix[j][1] * x_new[1] + matrix[j][2] * x_new[2];
+                printf("\n%9.6lf %s", tmp, fabs(tmp - matrix[j][3]) < EPS ? "OK" : "WRONG");
+            }
+
+            std::cout << "\n\n" << i + 1 << " iterations\n";
+
+            return;
+        }
+
+        x_old[0] = x_new[0];
+        x_old[1] = x_new[1];
+        x_old[2] = x_new[2];
+    }
+
+    std::cout << "\nOut of iterations!\n";
 }
 
 int main() {
@@ -364,8 +471,8 @@ int main() {
     // solve_holecki();
 
     // solve_progonka();
-
     solve_iter();
+    // solve_zeidel();
 
     return 0;
 }
