@@ -232,7 +232,7 @@ void solve_holecki() {
     B[2][1] = matrix[2][1] - B[2][0] * C[0][1];
     B[2][2] = matrix[2][2] - B[2][0] * C[0][2] - B[2][1] * C[1][2];
 
-    std::cout << "\n";
+    std::cout << "\nМатрица B\n";
     for (auto & i : B) {
         for (double j : i) {
             printf("%6.3lf ", j);
@@ -240,13 +240,15 @@ void solve_holecki() {
         std::cout << "\n";
     }
 
-    std::cout << "\n";
+    std::cout << "\nМатрица C\n";
     for (auto & i : C) {
         for (double j : i) {
             printf("%6.3lf ", j);
         }
         std::cout << "\n";
     }
+
+    std::cout << "\nA = B * C\n";
 
     // Прверка произведения матриц
     double checkout[3][3];
@@ -270,10 +272,10 @@ void solve_holecki() {
         std::cout << "\n";
     }
     if (success) {
-        std::cout << "\nMatrix is OK\n";
+        std::cout << "\nМатрицы в норме\n";
     }
     else {
-        std::cout << "Matrix missmatch";
+        std::cout << "Матрицы не совпадают";
         return;
     }
 
@@ -299,17 +301,21 @@ void solve_holecki() {
     for (auto & i : init_matrix) {
         double res = i[0] * x1 + i[1] * x2 + i[2] * x3;
         std::cout << "\n";
-        printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
+        printf("Ожидаемое: %.6lf Полученное: %.6lf Статус: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "ОК" : "НЕВЕРНО");
     }
 
     // Определитель
     double det = B[0][0] * B[1][1] * B[2][2];
-    std::cout << "\ndet = " << det << "\n";
+    std::cout << "\nОпределитель = " << det << "\n";
 }
 
 void solve_progonka() {
+    std::cout << "\nМетод прогонки\n";
+
     std::copy(&progon_matrix[0][0], &progon_matrix[0][0]+3*4,&matrix[0][0]);
     print_matrix();
+
+    std::cout << "Матрица симметрична по главной диагонали. Можно решать методом прогонки\n";
 
     double y1 = matrix[0][0];
     double alfa1 = (-matrix[0][1]) / y1;
@@ -335,16 +341,20 @@ void solve_progonka() {
     for (auto & i : matrix) {
         double res = i[0] * x1 + i[1] * x2 + i[2] * x3;
         std::cout << "\n";
-        printf("Expected: %.6lf Result: %.6lf Status: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "WRONG");
+        printf("Ожидаемое: %.6lf Полученное: %.6lf Статус: %s", i[3], res, fabs(res - i[3]) < EPSILON ? "OK" : "НЕВЕРНО");
     }
 }
 
 void solve_iter() {
+    std::cout << "\nМетод простых итераций\n";
+
     // Проверка сходимости
     if ((matrix[0][0] <= matrix[0][1] + matrix[0][2]) || (matrix[1][1] <= matrix[1][0] + matrix[1][2]) || (matrix[2][2] <= matrix[2][1] + matrix[2][0])) {
         std::cout << "\nNo conditions!\n";
         return;
     }
+
+    std::cout << "\nСходимость есть\n";
 
     // Вычисляем коэфы
     double mults[3][2];
@@ -356,6 +366,7 @@ void solve_iter() {
     mults[2][1] = matrix[2][1] / matrix[2][2] * -1;
 
     // Выводим коэфы
+    std::cout << "\nКоэффициенты\n";
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 2; j++) {
             printf("%6.3lf ", mults[i][j]);
@@ -364,6 +375,7 @@ void solve_iter() {
     }
 
     // Вычисляем и выводим начальное приближение
+    std::cout << "\nНачальное приближение\n";
     double x_old[3], x_new[3];
     double c[3];
     for (int i = 0; i < 3; i++) {
@@ -378,20 +390,21 @@ void solve_iter() {
         x_new[1] = mults[1][0] * x_old[0] + mults[1][1] * x_old[2] + c[1];
         x_new[2] = mults[2][0] * x_old[0] + mults[2][1] * x_old[1] + c[2];
 
-        printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_new[0], x_new[1], x_new[2]);
+        printf("\nИтерация №%d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_new[0], x_new[1], x_new[2]);
         // printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_old[0], x_old[1], x_old[2]);
         double prec = std::sqrt(pow((x_new[0] - x_old[0]), 2) + pow((x_new[1] - x_old[1]), 2) + pow((x_new[2] - x_old[2]), 2));
-        std::cout << "Prec: " << prec << "\n";
+        std::cout << "Погрешность: " << prec << "\n";
         if (prec <= EPS) {
-            std::cout << "Finished!\n";
+            std::cout << "Завершено!\n";
 
             // Проверка
+            std::cout << "\nПроверка\n";
             for (int j = 0; j < 3; j++) {
                 double tmp = matrix[j][0] * x_new[0] + matrix[j][1] * x_new[1] + matrix[j][2] * x_new[2];
-                printf("\n%9.6lf %s", tmp, fabs(tmp - matrix[j][3]) < EPS ? "OK" : "WRONG");
+                printf("\n%9.6lf %s", tmp, fabs(tmp - matrix[j][3]) < EPS ? "OK" : "НЕВЕРНО");
             }
 
-            std::cout << "\n\n" << i + 1 << " iterations\n";
+            std::cout << "\n\nВыполнено за " << i + 1 << " итераций\n";
 
             return;
         }
@@ -401,15 +414,19 @@ void solve_iter() {
         x_old[2] = x_new[2];
     }
 
-    std::cout << "\nOut of iterations!\n";
+    std::cout << "\nСлишком много итераций! Завершение\n";
 }
 
 void solve_zeidel() {
+    std::cout << "\nМетод Зейделя\n";
+
     // Проверка сходимости
     if ((matrix[0][0] <= matrix[0][1] + matrix[0][2]) || (matrix[1][1] <= matrix[1][0] + matrix[1][2]) || (matrix[2][2] <= matrix[2][1] + matrix[2][0])) {
         std::cout << "\nNo conditions!\n";
         return;
     }
+
+    std::cout << "\nСходимость есть\n";
 
     // Вычисляем коэфы
     double mults[3][2];
@@ -421,6 +438,7 @@ void solve_zeidel() {
     mults[2][1] = matrix[2][1] / matrix[2][2] * -1;
 
     // Выводим коэфы
+    std::cout << "\nКоэффициенты\n";
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 2; j++) {
             printf("%6.3lf ", mults[i][j]);
@@ -429,6 +447,7 @@ void solve_zeidel() {
     }
 
     // Вычисляем и выводим начальное приближение
+    std::cout << "\nНачальное приближение\n";
     double x_old[3], x_new[3];
     double c[3];
     for (int i = 0; i < 3; i++) {
@@ -443,20 +462,21 @@ void solve_zeidel() {
         x_new[1] = mults[1][0] * x_new[0] + mults[1][1] * x_old[2] + c[1];
         x_new[2] = mults[2][0] * x_new[0] + mults[2][1] * x_new[1] + c[2];
 
-        printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_new[0], x_new[1], x_new[2]);
+        printf("\nИтерация №%d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_new[0], x_new[1], x_new[2]);
         // printf("\nIteration %d: %9.6lf %9.6lf %9.6lf\n", i + 1, x_old[0], x_old[1], x_old[2]);
         double prec = std::sqrt(pow((x_new[0] - x_old[0]), 2) + pow((x_new[1] - x_old[1]), 2) + pow((x_new[2] - x_old[2]), 2));
-        std::cout << "Prec: " << prec << "\n";
+        std::cout << "Погрешность: " << prec << "\n";
         if (prec <= EPS) {
-            std::cout << "Finished!\n";
+            std::cout << "Завершено!\n";
 
             // Проверка
+            std::cout << "\nПроверка\n";
             for (int j = 0; j < 3; j++) {
                 double tmp = matrix[j][0] * x_new[0] + matrix[j][1] * x_new[1] + matrix[j][2] * x_new[2];
-                printf("\n%9.6lf %s", tmp, fabs(tmp - matrix[j][3]) < EPS ? "OK" : "WRONG");
+                printf("\n%9.6lf %s", tmp, fabs(tmp - matrix[j][3]) < EPS ? "OK" : "НЕВЕРНО");
             }
 
-            std::cout << "\n\n" << i + 1 << " iterations\n";
+            std::cout << "\n\nВыполнено за " << i + 1 << " итераций\n";
 
             return;
         }
@@ -466,7 +486,7 @@ void solve_zeidel() {
         x_old[2] = x_new[2];
     }
 
-    std::cout << "\nOut of iterations!\n";
+    std::cout << "\nСлишком много итераций!\n";
 }
 
 int main() {
@@ -475,9 +495,9 @@ int main() {
     std::copy(&matrix[0][0], &matrix[0][0]+3*4,&init_matrix[0][0]);
     print_matrix("Начальная матрица");
 
-    // solve_gauss();
+    solve_gauss();
     // solve_sqrt();
-    solve_holecki();
+    // solve_holecki();
 
     // solve_progonka();
 
