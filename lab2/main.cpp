@@ -26,6 +26,7 @@ void print_matrix(const std::string& label = "") {
     }
 }
 
+//
 void solve_gauss() {
     std::cout << "\nМетод Гаусса\n";
 
@@ -153,7 +154,7 @@ void solve_sqrt() {
     double y2 = (matrix[1][3] - matrix[0][1] * y1) / matrix[1][1];
     double y3 = (matrix[2][3] - matrix[0][2] * y1 - matrix[1][2] * y2) / matrix[2][2];
 
-    std::cout << "\nВычисляем коэф-ты y из матрицы B\n";
+    std::cout << "\nВычисляем коэф-ты y из уравнения Cy=b\n";
     printf("y1 = %.6lf \n", y1);
     printf("y2 = %.6lf \n", y2);
     printf("y3 = %.6lf \n", y3);
@@ -174,7 +175,7 @@ void solve_sqrt() {
     double x2 = (temp_matrix[1][3] - x3 * temp_matrix[2][1]) / temp_matrix[1][1];
     double x1 = (temp_matrix[0][3] - x3 * temp_matrix[2][0] - x2 * temp_matrix[1][0]) / temp_matrix[0][0];
 
-    std::cout << "\nВычисляем из полученной матрицы C неизвестные\n";
+    std::cout << "\nВычисляем неизвестные из уравнения Bx=y\n";
     printf("x1 = %.6lf \n", x1);
     printf("x2 = %.6lf \n", x2);
     printf("x3 = %.6lf \n", x3);
@@ -248,7 +249,7 @@ void solve_holecki() {
         std::cout << "\n";
     }
 
-    std::cout << "\nA = B * C\n";
+    std::cout << "\nA = BC\n";
 
     // Прверка произведения матриц
     double checkout[3][3];
@@ -272,10 +273,10 @@ void solve_holecki() {
         std::cout << "\n";
     }
     if (success) {
-        std::cout << "\nМатрицы в норме\n";
+        std::cout << "\nМатрицы верны, A = BC\n";
     }
     else {
-        std::cout << "Матрицы не совпадают";
+        std::cout << "Матрицы неверны";
         return;
     }
 
@@ -283,11 +284,12 @@ void solve_holecki() {
     double y2 = (matrix[1][3] - B[1][0] * y1) / B[1][1];
     double y3 = (matrix[2][3] - B[2][0] * y1 - B[2][1] * y2) / B[2][2];
 
-    std::cout << "\n";
+    std::cout << "\nВспомогательный вектор y из решения системы By = f\n";
     printf("y1 = %.6lf \n", y1);
     printf("y2 = %.6lf \n", y2);
     printf("y3 = %.6lf \n", y3);
 
+    std::cout << "\nВычисляем неизвестные из решения системы Cx = y\n";
     double x3 = y3;
     double x2 = y2 - C[1][2] * x3;
     double x1 = y1 - C[0][1] * x2 - C[0][2] * x3;
@@ -321,18 +323,24 @@ void solve_progonka() {
     double alfa1 = (-matrix[0][1]) / y1;
     double beta1 = matrix[0][3] / y1;
 
+    std::cout << "alfa1 = " << alfa1 << "\n" << "beta1 = " << beta1 << "\n";
+
     double y2 = matrix[1][1] + alfa1 * matrix[1][0];
     double alfa2 = (-matrix[1][2]) / y2;
     double beta2 = (matrix[1][3] - matrix[1][0] * beta1) / y2;
 
+    std::cout << "alfa2 = " << alfa2 << "\n" << "beta2 = " << beta2 << "\n";
+
     double y3 = matrix[2][2] + alfa2 * matrix[2][1];
     double beta3 = (matrix[2][3] - matrix[2][1] * beta2) / y3;
+
+    std::cout << "beta3 = " << beta3 << "\n";
 
     double x3 = beta3;
     double x2 = alfa2 * x3 + beta2;
     double x1 = alfa1 * x2 + beta1;
 
-    std::cout << "\n";
+    std::cout << "\nНеизвестные, вычисленные из коэф альфа и бета\n";
     printf("x1 = %.6lf \n", x1);
     printf("x2 = %.6lf \n", x2);
     printf("x3 = %.6lf \n", x3);
@@ -345,6 +353,7 @@ void solve_progonka() {
     }
 }
 
+//
 void solve_iter() {
     std::cout << "\nМетод простых итераций\n";
 
@@ -381,7 +390,7 @@ void solve_iter() {
     for (int i = 0; i < 3; i++) {
         x_old[i] = matrix[i][3] / matrix[i][i];
         c[i] = x_old[i];
-        std::cout << i + 1 << ". " << x_old[i] << "\n";
+        std::cout << "x" << i + 1 << " = " << x_old[i] << "\n";
     }
 
     // Делаем итерации(если их более 100 - выход)
@@ -417,6 +426,7 @@ void solve_iter() {
     std::cout << "\nСлишком много итераций! Завершение\n";
 }
 
+//
 void solve_zeidel() {
     std::cout << "\nМетод Зейделя\n";
 
@@ -453,7 +463,7 @@ void solve_zeidel() {
     for (int i = 0; i < 3; i++) {
         x_old[i] = matrix[i][3] / matrix[i][i];
         c[i] = x_old[i];
-        std::cout << i + 1 << ". " << x_old[i] << "\n";
+        std::cout << "x" << i + 1 << " = " << x_old[i] << "\n";
     }
 
     // Делаем итерации(если их более 100 - выход)
@@ -495,8 +505,8 @@ int main() {
     std::copy(&matrix[0][0], &matrix[0][0]+3*4,&init_matrix[0][0]);
     print_matrix("Начальная матрица");
 
-    solve_gauss();
-    // solve_sqrt();
+    // solve_gauss();
+    solve_sqrt();
     // solve_holecki();
 
     // solve_progonka();
