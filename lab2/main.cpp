@@ -500,7 +500,7 @@ void solve_zeidel() {
 }
 
 int main() {
-    setlocale(LC_ALL, "Russian");
+
 
     std::copy(&matrix[0][0], &matrix[0][0]+3*4,&init_matrix[0][0]);
     print_matrix("Начальная матрица");
