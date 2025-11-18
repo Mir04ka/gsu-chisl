@@ -64,6 +64,24 @@ void solve_iter(double from, double to) {
     cout << "\nOut of iterations!";
 }
 
+double f(double x) {
+    return odds[0] * x * x * x +
+           odds[1] * x * x +
+           odds[2] * x +
+           odds[3];
+}
+
+double f1(double x) {
+    return 3 * odds[0] * x * x +
+           2 * odds[1] * x +
+           odds[2];
+}
+
+double f2(double x) {
+    return 6 * odds[0] * x +
+           2 * odds[1];
+}
+
 void solve_newton(double from, double to) {
     double init_pribl;
 
@@ -81,6 +99,8 @@ void solve_newton(double from, double to) {
         k--;
     }
 
+
+
     // TODO Newton method
 }
 
@@ -90,6 +110,7 @@ int main() {
     cout << "\nУточняем корень уравнения x1 на [-3; -2.5] уравнения f(x) = x^3 + 2 * x^2 + 4\n";
 
     solve_iter(-3, -2.5);
+    solve_newton(-3, -2.5);
 
     return 0;
 }
