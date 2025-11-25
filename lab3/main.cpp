@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #define EPSILON 1e-3
 
@@ -7,6 +8,7 @@ using namespace std;
 double odds[4] = {1, 2, 0, 4};
 
 void solve_iter(double from, double to) {
+    cout << "\nУточняем корень уравнения x1 на [-3; -2.5] уравнения f(x) = x^3 + 2 * x^2 + 4\n";
     cout << "\nМетод итераций\n";
 
     double der_odds[4];
@@ -84,6 +86,7 @@ double f2(double x) {
 }
 
 void solve_newton(double from, double to) {
+    cout << "\nУточняем корень уравнения x1 на [-3; -2.5] уравнения f(x) = x^3 + 2 * x^2 + 4\n";
     cout << "\nМетод Ньютона\n";
 
     double init_pribl;
@@ -123,6 +126,7 @@ void solve_newton(double from, double to) {
 }
 
 void solve_hord(double from, double to) {
+    cout << "\nУточняем корень уравнения x1 на [-3; -2.5] уравнения f(x) = x^3 + 2 * x^2 + 4\n";
     cout << "\nМетод хорд\n";
 
     double c;
@@ -178,6 +182,7 @@ void solve_hord(double from, double to) {
 }
 
 void solve_combine(double from, double to) {
+    cout << "\nУточняем корень уравнения x1 на [-3; -2.5] уравнения f(x) = x^3 + 2 * x^2 + 4\n";
     cout << "\nКомбинированный метод\n";
 
     double a = from;
@@ -252,15 +257,133 @@ void solve_combine(double from, double to) {
     cout << "\nДостигнуто максимальное количество итераций! Корень не найден.\n";
 }
 
+double F1(double x, double y) { return cos(y) + x - 1.5; }
+double F2(double x, double y) { return 2.0 * y - sin(x - 0.5) - 1.0; }
+
+// функции итераций
+double phi1(double y) { // x = 1.5 - cos(y)
+    return 1.5 - cos(y);
+}
+double phi2(double x) { // y = (1 - sin(x - 0.5)) / 2
+    return 0.5 * (1.0 - sin(x - 0.5));
+}
+
+// производные
+double dphi1_dy(double y) { return sin(y); }                    // dx/dy
+double dphi2_dx(double x) { return -0.5 * cos(x - 0.5); }       // dy/dx
+
+
+void solve_system_iter() {
+    cout << "Используя метод итераций решаем систему уравнений\n┌cos(y) + x = 1.5\n{\n└2y - sin(x - 0.5) = 1";
+    cout << "Проверяем условия сходимости:\n";
+    cout << "\nd(1.5-cos(y))/dx = 0\nd(1.5-cos(y))/dy = sin(y)\nd((1-sin(x-0.5))/2)/dx = -(cos(x-0.5)/2)\nd((1-sin(x-0.5))/2)/dy = 0\n";
+
+    double x_prev = 1.17;
+    double y_prev = 0.81;
+
+    cout << "\nПо графику видим, что x0 = " << x_prev << " y0 = " << y_prev << "\n";
+
+    double q1 = fabs(dphi1_dy(y_prev));   // |∂φ1/∂y|
+    double q2 = fabs(dphi2_dx(x_prev));   // |∂φ2/∂x|
+    double q = max(q1, q2);
+    cout << "Оценка локального коэффициента сходимости q = max(|dφ1/dy|, |dφ2/dx|) = " << q << "\n";
+    if (q >= 1.0) {
+        cout << "q >= 1 - метод может не сходиться\n";
+        return;
+    }
+    cout << "q < 1 - локально метод сходится\n";
+
+    double x_next, y_next;
+    for (int k = 1; k <= 300; ++k) {
+        x_next = phi1(y_prev);
+        y_next = phi2(x_prev);
+
+        double dx = fabs(x_next - x_prev);
+        double dy = fabs(y_next - y_prev);
+        double err = max(dx, dy);
+
+        cout << "Iter " << setw(3) << k << ": x = " << setprecision(10) << x_next
+             << " , y = " << y_next
+             << " | разница x = " << dx << " , разница y = " << dy << " , max разница = " << err << "\n";
+
+        if (err <= EPSILON) {
+            cout << "\nε = " << EPSILON << " после " << k << " итераций.\n";
+            cout << "x = " << x_next << " , y = " << y_next << "\n";
+            cout << "Остатки: F1 = " << F1(x_next, y_next) << " , F2 = " << F2(x_next, y_next) << "\n";
+            cout << "\nПроверка:\nПодставим полученные значения в исходную систему:\n";
+            cout << "1 уравнение: " << F1(x_next, y_next) << "\n";
+            cout << "2 уравнение: " << F2(x_next, y_next) << "\n";
+            return;
+        }
+
+        x_prev = x_next;
+        y_prev = y_next;
+    }
+
+    cout << "\nДостигнуто максимальное количество итераций! Решение не найдено\n";
+    cout << "Текущее приближение: x = " << x_prev << " , y = " << y_prev << "\n";
+    cout << "Остатки: F1 = " << F1(x_prev, y_prev) << " , F2 = " << F2(x_prev, y_prev) << "\n";
+}
+
+void solve_system_newton() {
+    cout << "Используя метод итераций решаем систему уравнений\n┌cos(y) + x = 1.5\n{\n└2y - sin(x - 0.5) = 1\n";
+
+    double x = 1.17;
+    double y = 0.81;
+
+    for(int iter = 1; iter <= 20; iter++) {
+
+        double f1 = F1(x, y);
+        double f2 = F2(x, y);
+
+        double J11 = 1;
+        double J12 = -sin(y);
+        double J21 = -cos(x - 0.5);
+        double J22 = 2;
+
+        // Якобиан
+        double det = J11 * J22 - J12 * J21;
+
+        if (fabs(det) < 1e-10) {
+            cout << "Якобиан вырожден!\n";
+            return;
+        }
+
+        // Обратная матрица * F
+        double dx = (-f1 * J22 + f2 * J12) / det;
+        double dy = (-J11 * f2 + f1 * J21) / det;
+
+        x += dx;
+        y += dy;
+
+        cout << "Iter " << iter
+             << ": x=" << x
+             << "  y=" << y
+             << "  |dx|=" << fabs(dx)
+             << "  |dy|=" << fabs(dy) << endl;
+
+        if (fabs(dx) < EPSILON && fabs(dy) < EPSILON)
+            break;
+    }
+
+    cout << "\nПроверка:\n";
+    cout << "F1 = " << F1(x,y) << endl;
+    cout << "F2 = " << F2(x,y) << endl;
+
+    cout << "\nРешение:\n";
+    cout << "x = " << x << endl;
+    cout << "y = " << y << endl;
+}
+
 int main() {
     setlocale(LC_ALL, "Russian");
-
-    cout << "\nУточняем корень уравнения x1 на [-3; -2.5] уравнения f(x) = x^3 + 2 * x^2 + 4\n";
 
     // solve_iter(-3, -2.5);
     // solve_newton(-3, -2.5);
     // solve_hord(-3, -2.5);
-    solve_combine(-3, -2.5);
+    // solve_combine(-3, -2.5);
+    // solve_system_iter();
+    solve_system_newton();
 
     return 0;
 }
