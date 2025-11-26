@@ -57,7 +57,9 @@ void solve_iter(double from, double to) {
         cout << "\nx" << i + 1 << " = " << current << " Точность: " << prec << "\n";
 
         if (prec <= EPSILON) {
-            cout << "Достигнута достаточная точность. Ответ найден\nОтвет: f(x" << i + 1 << ") = " << current << " \n";
+            cout << "Достигнута достаточная точность. Ответ найден\nОтвет: x = " << current << " \n";
+            cout << "Проверка:\nПодставим в уравнение: ";
+            cout << "F = " << odds[0] * current * current * current + odds[1] * current * current + odds[2] * current + odds[3] << "\n";
             return;
         }
 
@@ -295,8 +297,8 @@ void solve_system_iter() {
     cout << "Проверяем условия сходимости:\n";
     cout << "\nd(1.5-cos(y))/dx = 0\nd(1.5-cos(y))/dy = sin(y)\nd((1-sin(x-0.5))/2)/dx = -(cos(x-0.5)/2)\nd((1-sin(x-0.5))/2)/dy = 0\n";
 
-    double x_prev = 1.17;
-    double y_prev = 0.81;
+    double x_prev = 0.6;
+    double y_prev = 0.6;
 
     cout << "\nПо графику видим, что x0 = " << x_prev << " y0 = " << y_prev << "\n";
 
@@ -314,8 +316,8 @@ void solve_system_iter() {
 
     for (int k = 1; k <= 200; ++k) {
 
-        double x_next = phi1(y_prev);      // ← новое x
-        double y_next = phi2(x_next);      // ← новое y (ВАЖНО!)
+        double x_next = phi1(y_prev);
+        double y_next = phi2(x_next);
 
         double dx = fabs(x_next - x_prev);
         double dy = fabs(y_next - y_prev);
@@ -350,8 +352,8 @@ void solve_system_iter() {
 void solve_system_newton() {
     cout << "Используя метод итераций решаем систему уравнений\n┌cos(y) + x = 1.5\n{\n└2y - sin(x - 0.5) = 1\n";
 
-    double x = 1.17;
-    double y = 0.81;
+    double x = 0.6;
+    double y = 0.6;
 
     for(int iter = 1; iter <= 20; iter++) {
 
