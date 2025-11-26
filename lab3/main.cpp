@@ -257,17 +257,34 @@ void solve_combine(double from, double to) {
     cout << "\nДостигнуто максимальное количество итераций! Корень не найден.\n";
 }
 
-double F1(double x, double y) { return cos(y) + x - 1.5; }
-double F2(double x, double y) { return 2.0 * y - sin(x - 0.5) - 1.0; }
 
-// функции итераций
-double phi1(double y) { // x = 1.5 - cos(y)
+double phi1(double y) {
     return 1.5 - cos(y);
 }
-double phi2(double x) { // y = (1 - sin(x - 0.5)) / 2
-    return 0.5 * (1.0 - sin(x - 0.5));
+
+double phi2(double x) {
+    return (1.0 + sin(x - 0.5)) / 2.0;
 }
 
+double F1(double x, double y) {
+    return cos(y) + x - 1.5;
+}
+
+double F2(double x, double y) {
+    return 2.0 * y - sin(x - 0.5) - 1.0;
+}
+
+// double F1(double x, double y) { return cos(y) + x - 1.5; }
+// double F2(double x, double y) { return 2.0 * y - sin(x - 0.5) - 1.0; }
+//
+// // функции итераций
+// double phi1(double y) { // x = 1.5 - cos(y)
+//     return 1.5 - cos(y);
+// }
+// double phi2(double x) { // y = (1 - sin(x - 0.5)) / 2
+//     return 0.5 * (1.0 - sin(x - 0.5));
+// }
+//
 // производные
 double dphi1_dy(double y) { return sin(y); }                    // dx/dy
 double dphi2_dx(double x) { return -0.5 * cos(x - 0.5); }       // dy/dx
@@ -293,32 +310,37 @@ void solve_system_iter() {
     }
     cout << "q < 1 - локально метод сходится\n";
 
-    double x_next, y_next;
-    for (int k = 1; k <= 300; ++k) {
-        x_next = phi1(y_prev);
-        y_next = phi2(x_prev);
+    cout << fixed << setprecision(10);
+
+    for (int k = 1; k <= 200; ++k) {
+
+        double x_next = phi1(y_prev);      // ← новое x
+        double y_next = phi2(x_next);      // ← новое y (ВАЖНО!)
 
         double dx = fabs(x_next - x_prev);
         double dy = fabs(y_next - y_prev);
         double err = max(dx, dy);
 
-        cout << "Iter " << setw(3) << k << ": x = " << setprecision(10) << x_next
-             << " , y = " << y_next
-             << " | разница x = " << dx << " , разница y = " << dy << " , max разница = " << err << "\n";
+        cout << "Iter " << setw(3) << k
+             << ": x = " << x_next
+             << ", y = " << y_next
+             << ", err = " << err << "\n";
 
-        if (err <= EPSILON) {
-            cout << "\nε = " << EPSILON << " после " << k << " итераций.\n";
-            cout << "x = " << x_next << " , y = " << y_next << "\n";
-            cout << "Остатки: F1 = " << F1(x_next, y_next) << " , F2 = " << F2(x_next, y_next) << "\n";
-            cout << "\nПроверка:\nПодставим полученные значения в исходную систему:\n";
-            cout << "1 уравнение: " << F1(x_next, y_next) << "\n";
-            cout << "2 уравнение: " << F2(x_next, y_next) << "\n";
+        if (err < EPSILON) {
+            cout << "\nРезультат:\n";
+            cout << "x = " << x_next << "\n";
+            cout << "y = " << y_next << "\n\n";
+            cout << "Проверка:\n";
+            cout << "F1 = " << F1(x_next, y_next) << "\n";
+            cout << "F2 = " << F2(x_next, y_next) << "\n";
             return;
         }
 
         x_prev = x_next;
         y_prev = y_next;
     }
+
+    cout << "Метод не сошелся.\n";
 
     cout << "\nДостигнуто максимальное количество итераций! Решение не найдено\n";
     cout << "Текущее приближение: x = " << x_prev << " , y = " << y_prev << "\n";
@@ -382,8 +404,8 @@ int main() {
     // solve_newton(-3, -2.5);
     // solve_hord(-3, -2.5);
     // solve_combine(-3, -2.5);
-    // solve_system_iter();
-    solve_system_newton();
+    solve_system_iter();
+    // solve_system_newton();
 
     return 0;
 }
