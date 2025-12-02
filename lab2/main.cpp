@@ -506,7 +506,7 @@ int main() {
     print_matrix("Начальная матрица");
 
     // solve_gauss();
-    solve_sqrt();
+    // solve_sqrt();
     // solve_holecki();
 
     // solve_progonka();
