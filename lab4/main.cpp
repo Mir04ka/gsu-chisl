@@ -1,5 +1,6 @@
 #define K (0.01 * (14 + 21))
 #define EPSILON 0.001
+#include <cmath>
 #include <iostream>
 
 double matrix[3][3] = {{2 + K, 0.25, 0.75}, {0.25, 1.5 + K, 0.45}, {0.75, 0.45, 3 + K}};
@@ -27,6 +28,55 @@ double f2(double x) {
     return 6 * F_odds[0] * x +
            2 * F_odds[1];
 }
+
+void solve_vector(double A[3][3], double lambda, double out[3]) {
+    double M[3][3];
+
+    // (A - λI)
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            M[i][j] = A[i][j] - (i == j ? lambda : 0);
+
+    double a1 = M[0][0], b1 = M[0][1], c1 = M[0][2];
+    double a2 = M[1][0], b2 = M[1][1], c2 = M[1][2];
+
+    double det = a1*b2 - a2*b1;
+
+    double x1, x2, x3 = 1;
+
+    if (fabs(det) < 1e-12) {
+        x2 = 1;
+        x1 = (-c1 - b1*x2) / a1;
+    } else {
+        x1 = (-c1*b2 + c2*b1) / det;
+        x2 = (-a1*c2 + a2*c1) / det;
+    }
+
+    double norm = sqrt(x1*x1 + x2*x2 + x3*x3);
+    out[0] = x1 / norm;
+    out[1] = x2 / norm;
+    out[2] = x3 / norm;
+}
+
+void check_eigen(double A[3][3], double lambda, double v[3]) {
+    double y[3] = {0};
+
+    // y = A * v
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            y[i] += A[i][j] * v[j];
+
+    cout << "\nПроверка для λ = " << lambda << ":\n";
+    for (int i = 0; i < 3; i++) {
+        double lv = lambda * v[i];
+        double err = fabs(y[i] - lv);
+        cout << "A*v[" << i << "] = " << y[i]
+             << "    λ*v[" << i << "] = " << lv
+             << "    |Δ| = " << err
+             << (err < 0.02 ? "   OK" : "   FAIL") << "\n";
+    }
+}
+
 
 double solve_newton(double from, double to, bool* solved) {
     *solved = true;
@@ -185,18 +235,40 @@ void solve_danilevski() {
     if (!solved) {
         cout << "Can't find this root\n";
     }
+    cout << "l1 = " << l1 << "\n";
 
     double l2 = solve_newton(1.9, 2.0, &solved);
     if (!solved) {
         cout << "Can't find this root\n";
     }
+    cout << "l2 = " << l2 << "\n";
 
     double l3 = solve_newton(3.88, 3.89, &solved);
     if (!solved) {
         cout << "Can't find this root\n";
     }
+    cout << "l3 = " << l3 << "\n";
 
+    double A_orig[3][3];
+    for (int i=0;i<3;i++)
+        for (int j=0;j<3;j++)
+            A_orig[i][j] = matrix[i][j];
 
+    double v1[3], v2[3], v3[3];
+
+    solve_vector(A_orig, l1, v1);
+    solve_vector(A_orig, l2, v2);
+    solve_vector(A_orig, l3, v3);
+
+    cout << "\nСобственные векторы:\n";
+    cout << "v1 = (" << v1[0] << ", " << v1[1] << ", " << v1[2] << ")\n";
+    cout << "v2 = (" << v2[0] << ", " << v2[1] << ", " << v2[2] << ")\n";
+    cout << "v3 = (" << v3[0] << ", " << v3[1] << ", " << v3[2] << ")\n";
+
+    cout << "\nПроверка AX = λX\n";
+    check_eigen(A_orig, l1, v1);
+    check_eigen(A_orig, l2, v2);
+    check_eigen(A_orig, l3, v3);
 }
 
 int main() {
