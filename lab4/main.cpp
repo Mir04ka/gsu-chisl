@@ -2,9 +2,10 @@
 #define EPSILON 0.001
 #include <cmath>
 #include <iostream>
+#include <vector>
 
-double matrix[3][3] = {{2 + K, 0.25, 0.75}, {0.25, 1.5 + K, 0.45}, {0.75, 0.45, 3 + K}};
-// double matrix[3][3] = {{10, 2, 1}, {2, 12, 2}, {1, 2, 15}};
+// double matrix[3][3] = {{2 + K, 0.25, 0.75}, {0.25, 1.5 + K, 0.45}, {0.75, 0.45, 3 + K}};
+double matrix[3][3] = {{10, 2, 1}, {2, 12, 2}, {1, 2, 15}};
 double matrixB[3] = {3 + K, 2.2 + K, 4.2 + K};
 const double oneMatrix[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
 double F_odds[4];
@@ -271,10 +272,181 @@ void solve_danilevski() {
     check_eigen(A_orig, l3, v3);
 }
 
+tuple<int, int> find_max_not_diagonal(double mx[3][3]) {
+    int i_max = 0, j_max = 1;
+    tuple<int, int> to_check[4] = {{0, 1}, {1, 0}, {2, 1}, {1, 2}};
+
+    for (int i = 0; i < 4; i++) {
+        if (fabs(mx[get<0>(to_check[i])][get<1>(to_check[i])]) > fabs(mx[i_max][j_max])) {
+            i_max = get<0>(to_check[i]);
+            j_max = get<1>(to_check[i]);
+        }
+    }
+
+    return {i_max, j_max};
+}
+
+double mt[3][3] = {0};
+
+void solve_jakobi() {
+    double A[3][3] = {0};
+    double U[100][3][3];
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            A[i][j] = matrix[i][j];
+        }
+    }
+
+    for (int p = 0; p < 100; p++) {
+        cout << "Шаг " << p + 1 << "\n";
+
+        auto k0 = find_max_not_diagonal(A);
+        int i0, j0;
+        tie(i0, j0) = k0;
+
+        cout << "i0 = " << i0 << "\n";
+        cout << "j0 = " << j0 << "\n";
+        cout << "matrix[i0][j0] = " << A[i0][j0] << "\n";
+
+        if (fabs(A[i0][j0]) < EPSILON) {
+            cout << "Решение нужной точности найдено\n";
+            double res[3][3];
+            double tmp[3][3];
+
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    res[i][j] = (i == j ? 1.0 : 0.0);
+
+            for (int o = 0; o < p; o++) {
+                for (int i = 0; i < 3; i++)
+                    for (int j = 0; j < 3; j++) {
+                        tmp[i][j] = 0;
+                        for (int k = 0; k < 3; k++)
+                            tmp[i][j] += U[o][i][k] * res[k][j];
+                    }
+
+                for (int i = 0; i < 3; i++)
+                    for (int j = 0; j < 3; j++)
+                        res[i][j] = tmp[i][j];
+            }
+
+
+            cout << "Res:\n";
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    cout << res[i][j] << " ";
+                }
+                cout << "\n";
+            }
+
+            double x1_hlp = 1 / res[2][0];
+            double x1 = res[0][0] * x1_hlp;
+
+            cout << "\n" << x1 << "\n";
+
+            return;
+        }
+
+        double fi = atan((2 * A[i0][j0])/(A[i0][i0] - A[j0][j0]))/2;
+        cout << "fi = " << fi << "\n";
+
+        double cs = cos(fi);
+        double sn = sin(fi);
+
+        double U_obr[3][3] = {0};
+
+        if ((i0 == 0 && j0 == 1) || (i0 == 1 && j0 == 0)) {
+            U[p][0][0] =  cs;   U[p][0][1] = -sn;  U[p][0][2] = 0;
+            U[p][1][0] =  sn;   U[p][1][1] =  cs;  U[p][1][2] = 0;
+            U[p][2][0] =   0;   U[p][2][1] =   0;  U[p][2][2] = 1;
+
+            U_obr[0][0] =  cs;  U_obr[0][1] = sn;  U_obr[0][2] = 0;
+            U_obr[1][0] = -sn;  U_obr[1][1] = cs;  U_obr[1][2] = 0;
+            U_obr[2][0] =   0;  U_obr[2][1] = 0;   U_obr[2][2] = 1;
+        }
+        else if ((i0 == 1 && j0 == 2) || (i0 == 2 && j0 == 1)) {
+            U[p][0][0] =  1;   U[p][0][1] =  0;    U[p][0][2] = 0;
+            U[p][1][0] =  0;   U[p][1][1] =  cs;   U[p][1][2] = -sn;
+            U[p][2][0] =  0;   U[p][2][1] =  sn;   U[p][2][2] =  cs;
+
+            U_obr[0][0] = 1;  U_obr[0][1] =  0;  U_obr[0][2] = 0;
+            U_obr[1][0] = 0;  U_obr[1][1] =  cs; U_obr[1][2] = sn;
+            U_obr[2][0] = 0;  U_obr[2][1] = -sn; U_obr[2][2] = cs;
+        }
+        else if ((i0 == 0 && j0 == 2) || (i0 == 2 && j0 == 0)) {
+            U[p][0][0] =  cs;   U[p][0][1] =  0;   U[p][0][2] = -sn;
+            U[p][1][0] =   0;   U[p][1][1] =  1;   U[p][1][2] =  0;
+            U[p][2][0] =  sn;   U[p][2][1] =  0;   U[p][2][2] =  cs;
+
+            U_obr[0][0] = cs;  U_obr[0][1] = 0;  U_obr[0][2] = sn;
+            U_obr[1][0] = 0;   U_obr[1][1] = 1;  U_obr[1][2] = 0;
+            U_obr[2][0] = -sn; U_obr[2][1] = 0;  U_obr[2][2] = cs;
+        }
+
+        cout << "U:\n";
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                cout << U[p][i][j] << " ";
+            }
+            cout << "\n";
+        }
+
+        cout << "U_obr:\n";
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                cout << U_obr[i][j] << " ";
+            }
+            cout << "\n";
+        }
+
+        double temp[3][3] = {0};
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    temp[i][j] += U_obr[i][k] * A[k][j];
+                }
+            }
+        }
+
+        cout << "U_obr*A:\n";
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                cout << temp[i][j] << " ";
+            }
+            cout << "\n";
+        }
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                A[i][j] = 0;
+            }
+        }
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    A[i][j] += temp[i][k] * U[p][k][j];
+                }
+            }
+        }
+
+        cout << "A:\n";
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                cout << A[i][j] << " ";
+            }
+            cout << "\n";
+        }
+    }
+
+    cout << "Out of iterations!" << "\n";
+}
+
 int main() {
     setlocale(LC_ALL, "Russian");
 
-    solve_danilevski();
+    // solve_danilevski();
+    solve_jakobi();
 
     return 0;
 }
